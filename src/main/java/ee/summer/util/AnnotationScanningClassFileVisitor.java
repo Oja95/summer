@@ -1,6 +1,7 @@
 package ee.summer.util;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
@@ -10,17 +11,19 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import ee.summer.annotation.Thing;
+import ee.summer.context.descriptor.AnnotatedTypeDescriptor;
 
-public class AnnotationScanningClassFileVisitor extends SimpleFileVisitor<Path> {
+public class AnnotationScanningClassFileVisitor<T extends Annotation> extends SimpleFileVisitor<Path> {
 
   private static final Logger log = Logger.getLogger(AnnotationScanningClassFileVisitor.class.getName());
   private static final String DOT_CLASS_STRING = ".class";
 
-  private final List<Class<?>> thingAnnotatedClasses;
+  private final List<AnnotatedTypeDescriptor> thingAnnotatedClasses;
   private final Path rootPath;
+  private final Class<T> annotationType;
 
-  public AnnotationScanningClassFileVisitor(Path rootPath) {
+  public AnnotationScanningClassFileVisitor(Path rootPath, Class<T> annotationType) {
+    this.annotationType = annotationType;
     this.thingAnnotatedClasses = new ArrayList<>();
     this.rootPath = rootPath;
   }
@@ -32,8 +35,9 @@ public class AnnotationScanningClassFileVisitor extends SimpleFileVisitor<Path> 
     if (classFile.endsWith(DOT_CLASS_STRING)) {
       try {
         var aClass = Class.forName(classFilePathToClassName(classFile));
-        if (aClass.isAnnotationPresent(Thing.class)) {
-          thingAnnotatedClasses.add(aClass);
+        var annotation = aClass.getAnnotation(annotationType);
+        if (annotation != null) {
+          thingAnnotatedClasses.add(new AnnotatedTypeDescriptor(annotation, aClass));
         }
       }
       catch (ClassNotFoundException e) {
@@ -49,7 +53,7 @@ public class AnnotationScanningClassFileVisitor extends SimpleFileVisitor<Path> 
     return s.replaceAll("/|\\\\", "\\.").substring(0, s.length() - DOT_CLASS_STRING.length());
   }
 
-  public List<Class<?>> getThingAnnotatedClasses() {
+  public List<AnnotatedTypeDescriptor> getThingAnnotatedClasses() {
     return thingAnnotatedClasses;
   }
 }
