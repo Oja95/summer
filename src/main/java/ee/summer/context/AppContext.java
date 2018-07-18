@@ -13,9 +13,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import ee.summer.annotation.Thing;
-import ee.summer.context.descriptor.AnnotatedTypeDescriptor;
-import ee.summer.util.AnnotationScanningClassFileVisitor;
+import ee.summer.context.descriptor.Descriptor;
+import ee.summer.visitor.ClassPathScanningFileVisitor;
 
 public class AppContext {
 
@@ -25,22 +24,22 @@ public class AppContext {
     createThingInstances(this.scanThingsClasses());
   }
 
-  private List<AnnotatedTypeDescriptor> scanThingsClasses() {
+  private List<Descriptor> scanThingsClasses() {
     return getClasspathRoots().stream()
         .map(this::doClasspathScan)
         .flatMap(List::stream)
         .collect(Collectors.toList());
   }
 
-  private void createThingInstances(List<AnnotatedTypeDescriptor> thingClasses) {
+  private void createThingInstances(List<Descriptor> thingClasses) {
 
   }
 
-  private List<AnnotatedTypeDescriptor> doClasspathScan(Path path) {
+  private List<Descriptor> doClasspathScan(Path path) {
     try {
-      var visitor = new AnnotationScanningClassFileVisitor<>(path, Thing.class);
+      var visitor = new ClassPathScanningFileVisitor(path);
       Files.walkFileTree(path, visitor);
-      return visitor.getThingAnnotatedClasses();
+      return visitor.getScannedDescriptors();
     }
     catch (IOException e) {
       log.log(Level.WARNING, "Classpath scanning failed", e);
