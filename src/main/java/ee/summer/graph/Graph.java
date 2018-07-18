@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
  * Directed unweighted graph implementation to represent dependency relations
  * @param <V> vertex node type
  */
-class Graph<V> {
+public class Graph<V> {
   private final Set<V> vertices;
   private final Map<V, Set<V>> edges;
 
@@ -19,28 +19,36 @@ class Graph<V> {
     this.edges = new HashMap<>();
   }
 
-  void addVertex(V vertice) {
-    vertices.add(vertice);
+  public void addVertex(V vertex) {
+    vertices.add(vertex);
   }
 
-  void addEdge(V from, V to) {
+  public void addEdge(V from, V to) {
     edges.computeIfAbsent(from, key -> new HashSet<>()).add(to);
   }
 
-  Set<V> getVertices() {
+  public Set<V> getVertices() {
     return vertices;
   }
 
-  Set<V> getOutgoingAdjacentVertices(V vertice) {
-    return edges.get(vertice);
+  public Set<V> getOutgoingAdjacentVertices(V vertex) {
+    return edges.get(vertex);
   }
 
-  Set<V> getIncomingAdjacentVertices(V vertice) {
-    return vertices.stream().filter(v -> edges.getOrDefault(v, new HashSet<>()).contains(vertice)).collect(Collectors.toSet());
+  public Set<V> getIncomingAdjacentVertices(V vertex) {
+    return vertices.stream().filter(v -> edges.getOrDefault(v, new HashSet<>()).contains(vertex)).collect(Collectors.toSet());
   }
 
-  boolean hasEdge(V from, V to) {
+  public boolean hasEdge(V from, V to) {
     return edges.getOrDefault(from, new HashSet<>()).contains(to);
+  }
+
+  public boolean hasVertex(V vertex) {
+    return vertices.contains(vertex);
+  }
+
+  public void removeEdge(V from, V to) {
+    edges.getOrDefault(from, new HashSet<>()).remove(to);
   }
 
 

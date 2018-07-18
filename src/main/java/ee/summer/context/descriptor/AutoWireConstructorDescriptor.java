@@ -2,10 +2,11 @@ package ee.summer.context.descriptor;
 
 import java.lang.reflect.Constructor;
 
-public class AutoWireConstructorDescriptor implements Descriptor {
+import ee.summer.visitor.GraphConstructingDescriptorVisitor;
+
+public class AutoWireConstructorDescriptor extends AbstractDescriptor {
 
   private final Constructor constructor;
-  private final Class type;
   private final Class[] argTypes;
 
   public AutoWireConstructorDescriptor(Constructor constructor, Class aClass, Class[] parameterTypes) {
@@ -24,5 +25,10 @@ public class AutoWireConstructorDescriptor implements Descriptor {
 
   public Class[] getArgTypes() {
     return argTypes;
+  }
+
+  @Override
+  public Descriptor accept(GraphConstructingDescriptorVisitor visitor) {
+    return visitor.visit(this);
   }
 }
