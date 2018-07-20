@@ -30,7 +30,7 @@ public class ClassPathScanningFileVisitor extends SimpleFileVisitor<Path> {
   public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 
     var classFile = rootPath.relativize(file);
-    if (classFile.endsWith(DOT_CLASS_STRING)) {
+    if (classFile.toString().endsWith(DOT_CLASS_STRING)) {
       try {
         Class<?> aClass = Class.forName(classFilePathToClassName(classFile));
         var descriptor = ClassIntrospectorUtil.introspect(aClass);
