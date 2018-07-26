@@ -11,11 +11,7 @@ public class ClassIntrospectorUtil {
   public static AnnotatedTypeDescriptor introspect(Class aClass) {
     var builder = new AnnotatedTypeDescriptor.Builder();
     builder.setType(aClass);
-
-    Annotation thingAnnotation = aClass.getAnnotation(Thing.class);
-    if (thingAnnotation != null) {
-      builder.setName(((Thing) thingAnnotation).thingName());
-    }
+    builder.setThingAnnotation((Thing) aClass.getAnnotation(Thing.class));
 
     for (Constructor constructor : aClass.getDeclaredConstructors()) {
       Annotation[] declaredAnnotations = constructor.getDeclaredAnnotations();

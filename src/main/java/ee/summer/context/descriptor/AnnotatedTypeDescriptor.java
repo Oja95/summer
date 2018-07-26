@@ -1,21 +1,24 @@
 package ee.summer.context.descriptor;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+
+import ee.summer.annotation.Thing;
 
 public class AnnotatedTypeDescriptor {
 
   private final Class type;
   private final Constructor autowireAnnotatedConstructor;
-  private final String name;
+  private final Thing thingAnnotation;
 
-  public AnnotatedTypeDescriptor(String name, Class type, Constructor autowireAnnotatedConstructors) {
-    this.name = name;
+  public AnnotatedTypeDescriptor(Thing thingAnnotation, Class type, Constructor autowireAnnotatedConstructors) {
+    this.thingAnnotation = thingAnnotation;
     this.type = type;
     this.autowireAnnotatedConstructor = autowireAnnotatedConstructors;
   }
 
-  public String getName() {
-    return name;
+  public Annotation getThingAnnotation() {
+    return thingAnnotation;
   }
 
   public Class getType() {
@@ -29,7 +32,7 @@ public class AnnotatedTypeDescriptor {
   public static class Builder {
     private Class type;
     private Constructor autowireAnnotatedConstructor;
-    private String name;
+    private Thing thingAnnotation;
 
     public void setType(Class type) {
       this.type = type;
@@ -39,15 +42,24 @@ public class AnnotatedTypeDescriptor {
       this.autowireAnnotatedConstructor = autowireAnnotatedConstructor;
     }
 
-    public void setName(String name) {
-      this.name = name;
+    public void setThingAnnotation(Thing thingAnnotation) {
+      this.thingAnnotation = thingAnnotation;
     }
 
     public AnnotatedTypeDescriptor build() {
-      if (name == null && autowireAnnotatedConstructor == null) {
+      if (thingAnnotation == null && autowireAnnotatedConstructor == null) {
         return null; // TODO: refactor
       }
-      return new AnnotatedTypeDescriptor(name, type, autowireAnnotatedConstructor);
+      return new AnnotatedTypeDescriptor(thingAnnotation, type, autowireAnnotatedConstructor);
     }
+  }
+
+  @Override
+  public String toString() {
+    return "AnnotatedTypeDescriptor{" +
+        "type=" + type +
+        ", autowireAnnotatedConstructor=" + autowireAnnotatedConstructor +
+        ", thingAnnotation=" + thingAnnotation +
+        '}';
   }
 }

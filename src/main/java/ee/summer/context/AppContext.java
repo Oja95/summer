@@ -3,6 +3,7 @@ package ee.summer.context;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.reflect.Constructor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,7 +24,7 @@ public class AppContext {
 
   // TODO: ensure singleton
   public AppContext() {
-    createDependencyGraph(this.scanThingsClasses());
+    Graph<AnnotatedTypeDescriptor> dependencyGraph = createDependencyGraph(this.scanThingsClasses());
   }
 
   private List<AnnotatedTypeDescriptor> scanThingsClasses() {
@@ -33,17 +34,37 @@ public class AppContext {
         .collect(Collectors.toList());
   }
 
-  private void createDependencyGraph(List<AnnotatedTypeDescriptor> thingClasses) {
-    Graph<AnnotatedTypeDescriptor> abstractDescriptorGraph = new Graph<>();
-    for (AnnotatedTypeDescriptor thingClass : thingClasses) {
-      log.log(Level.INFO, "Registered class: {0}", thingClass.getType());
-      abstractDescriptorGraph.addVertex(thingClass);
+  private Graph<AnnotatedTypeDescriptor> createDependencyGraph(List<AnnotatedTypeDescriptor> thingClasses) {
+    Graph<AnnotatedTypeDescriptor> graph = new Graph<>();
+    for (AnnotatedTypeDescriptor descriptor : thingClasses) {
+      log.log(Level.INFO, "Registered class: {0}", descriptor.getType());
+      graph.addVertex(descriptor);
+
+      Constructor autowireAnnotatedConstructor = descriptor.getAutowireAnnotatedConstructor();
+      if (autowireAnnotatedConstructor != null) {
+        for (Class typeClass : autowireAnnotatedConstructor.getParameterTypes()) {
+          AnnotatedTypeDescriptor dependencyDescriptor = findThingAnnotatedDescriptorByType(thingClasses, typeClass);
+          if (dependencyDescriptor == null) {
+            throw new IllegalStateException("AutoWire constructor missing dependency!");
+          }
+
+          graph.addEdge(dependencyDescriptor, descriptor);
+        }
+      }
     }
 
-
+    return graph;
   }
 
-//  private AbstractDescriptor
+  private AnnotatedTypeDescriptor findThingAnnotatedDescriptorByType(List<AnnotatedTypeDescriptor> descriptors, Class aClass) {
+    for (AnnotatedTypeDescriptor descriptor : descriptors) {
+      if (descriptor.getType().equals(aClass) && descriptor.getThingAnnotation() != null) {
+        return descriptor;
+      }
+    }
+
+    return null;
+  }
 
   private List<AnnotatedTypeDescriptor> doClasspathScan(Path path) {
     try {
