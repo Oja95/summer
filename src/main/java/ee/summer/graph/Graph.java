@@ -64,7 +64,7 @@ public class Graph<V> {
       V next = noIncomingEdgeVertices.iterator().next();
       noIncomingEdgeVertices.remove(next);
       result.add(next);
-      for (V neighbourVertex : getOutgoingAdjacentVertices(next)) {
+      for (V neighbourVertex : new HashSet<>(getOutgoingAdjacentVertices(next))) {
         removeEdge(next, neighbourVertex);
         if (getIncomingAdjacentVertices(neighbourVertex).isEmpty()) {
           noIncomingEdgeVertices.add(neighbourVertex);
