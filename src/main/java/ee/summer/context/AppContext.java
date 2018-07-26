@@ -25,6 +25,7 @@ public class AppContext {
   // TODO: ensure singleton
   public AppContext() {
     Graph<AnnotatedTypeDescriptor> dependencyGraph = createDependencyGraph(this.scanThingsClasses());
+    log.log(Level.INFO, "Topologically sorted order of descriptors: {0}", dependencyGraph.getTopologicalOrdering());
   }
 
   private List<AnnotatedTypeDescriptor> scanThingsClasses() {

@@ -1,7 +1,11 @@
 package ee.summer.graph;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,7 +36,7 @@ public class Graph<V> {
   }
 
   public Set<V> getOutgoingAdjacentVertices(V vertex) {
-    return edges.get(vertex);
+    return edges.getOrDefault(vertex, Collections.emptySet());
   }
 
   public Set<V> getIncomingAdjacentVertices(V vertex) {
@@ -51,5 +55,32 @@ public class Graph<V> {
     edges.getOrDefault(from, new HashSet<>()).remove(to);
   }
 
+  // TODO: Currently modifies the state of the underlying graph, avoid it
+  public List<V> getTopologicalOrdering() {
+    var result = new ArrayList<V>();
+    var noIncomingEdgeVertices = getVerticesWithoutIncomingEdge();
+
+    while (!noIncomingEdgeVertices.isEmpty()) {
+      V next = noIncomingEdgeVertices.iterator().next();
+      noIncomingEdgeVertices.remove(next);
+      result.add(next);
+      for (V neighbourVertex : getOutgoingAdjacentVertices(next)) {
+        removeEdge(next, neighbourVertex);
+        if (getIncomingAdjacentVertices(neighbourVertex).isEmpty()) {
+          noIncomingEdgeVertices.add(neighbourVertex);
+        }
+      }
+    }
+
+    if (edges.values().stream().mapToLong(Collection::size).sum() != 0L) {
+      throw new IllegalStateException("Cyclic dependency!"); // TODO: Error message to state what is causing cyclic dependency
+    } else {
+      return result;
+    }
+  }
+
+  private Set<V> getVerticesWithoutIncomingEdge() {
+    return vertices.stream().filter(vertex -> getIncomingAdjacentVertices(vertex).isEmpty()).collect(Collectors.toSet());
+  }
 
 }
