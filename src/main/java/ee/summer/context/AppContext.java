@@ -13,29 +13,39 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import ee.summer.context.descriptor.Descriptor;
+import ee.summer.context.descriptor.AnnotatedTypeDescriptor;
+import ee.summer.graph.Graph;
 import ee.summer.visitor.ClassPathScanningFileVisitor;
 
 public class AppContext {
 
   private static final Logger log = Logger.getLogger(AppContext.class.getName());
 
+  // TODO: ensure singleton
   public AppContext() {
-    createThingInstances(this.scanThingsClasses());
+    createDependencyGraph(this.scanThingsClasses());
   }
 
-  private List<Descriptor> scanThingsClasses() {
+  private List<AnnotatedTypeDescriptor> scanThingsClasses() {
     return getClasspathRoots().stream()
         .map(this::doClasspathScan)
         .flatMap(List::stream)
         .collect(Collectors.toList());
   }
 
-  private void createThingInstances(List<Descriptor> thingClasses) {
+  private void createDependencyGraph(List<AnnotatedTypeDescriptor> thingClasses) {
+    Graph<AnnotatedTypeDescriptor> abstractDescriptorGraph = new Graph<>();
+    for (AnnotatedTypeDescriptor thingClass : thingClasses) {
+      log.log(Level.INFO, "Registered class: {0}", thingClass.getType());
+      abstractDescriptorGraph.addVertex(thingClass);
+    }
+
 
   }
 
-  private List<Descriptor> doClasspathScan(Path path) {
+//  private AbstractDescriptor
+
+  private List<AnnotatedTypeDescriptor> doClasspathScan(Path path) {
     try {
       var visitor = new ClassPathScanningFileVisitor(path);
       Files.walkFileTree(path, visitor);

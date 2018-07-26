@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import ee.summer.context.descriptor.Descriptor;
+import ee.summer.context.descriptor.AnnotatedTypeDescriptor;
 import ee.summer.util.ClassIntrospectorUtil;
 
 public class ClassPathScanningFileVisitor extends SimpleFileVisitor<Path> {
@@ -18,7 +18,7 @@ public class ClassPathScanningFileVisitor extends SimpleFileVisitor<Path> {
   private static final Logger log = Logger.getLogger(ClassPathScanningFileVisitor.class.getName());
   private static final String DOT_CLASS_STRING = ".class";
 
-  private final List<Descriptor> scannedDescriptors;
+  private final List<AnnotatedTypeDescriptor> scannedDescriptors;
   private final Path rootPath;
 
   public ClassPathScanningFileVisitor(Path rootPath) {
@@ -34,7 +34,9 @@ public class ClassPathScanningFileVisitor extends SimpleFileVisitor<Path> {
       try {
         Class<?> aClass = Class.forName(classFilePathToClassName(classFile));
         var descriptor = ClassIntrospectorUtil.introspect(aClass);
-        scannedDescriptors.addAll(descriptor);
+        if (descriptor != null) {
+          scannedDescriptors.add(descriptor);
+        }
       }
       catch (ClassNotFoundException e) {
         log.log(Level.WARNING, "Could not find class!", e);
@@ -49,7 +51,7 @@ public class ClassPathScanningFileVisitor extends SimpleFileVisitor<Path> {
     return s.replaceAll("/|\\\\", "\\.").substring(0, s.length() - DOT_CLASS_STRING.length());
   }
 
-  public List<Descriptor> getScannedDescriptors() {
+  public List<AnnotatedTypeDescriptor> getScannedDescriptors() {
     return scannedDescriptors;
   }
 }
